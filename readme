@@ -7,10 +7,13 @@ thought it would be fun to dive into the rabbit hole directly.
 
 first modified (C version) to match (within 2-5%) `md5sum` from `coreutils` and OpenSSL.
 
-then hand-rolled ASM optis based on gcc `-O3` analysis => asm translations.
+then hand-rolled ASM optis (with unwind tables) based on gcc `-O3` analysis => asm translations.
+using `objdump` and `perf` mostly and stealing from `libcrypto`.
 
 ===
 
 #   ./gen_asm.py > md5.s
 #   as md5.s -o md5.o && ld md5.o -o md5
 #   ./test-md5
+
+completes a 1GB file, single stream, in about 1 second.
