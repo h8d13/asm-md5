@@ -7,11 +7,10 @@ declare -A files=(
 )
 
 code=0
-for file in "${!files[@]}"; do
-	want=${files[$file]}
-	have=$(./md5 "$file")
+check() {
+	local name=$1 want=$2 have=$3
 
-	echo -n "checking $file is $want... "
+	echo -n "checking $name is $want... "
 
 	if [[ "$want" == "$have" ]]; then
 		echo 'ok'
@@ -19,6 +18,28 @@ for file in "${!files[@]}"; do
 		echo "fail! we have '$have'"
 		code=1
 	fi
+}
+
+# file path goes through mmap, pipe through the read loop
+for file in "${!files[@]}"; do
+	want=${files[$file]}
+	check "$file" "$want" "$(./md5 "$file")"
+	check "$file (pipe)" "$want" "$(cat "$file" | ./md5)"
 done
+
+# stdin already partly consumed: hash from the offset, not file start
+check 'files/hello.txt (offset 5)' '68b329da9893e34099c7d8ad5cb9c940' \
+	"$({ dd bs=5 count=1 status=none of=/dev/null; ./md5; } < files/hello.txt)"
+
+# padding boundaries: under 56 bytes left pads into one block, else two
+tmp=$(mktemp)
+for n in 55 56 63 64 65 119 120; do
+	head -c "$n" files/random_4kb.bin > "$tmp"
+	want=$(md5sum < "$tmp")
+	want=${want%% *}
+	check "random_4kb.bin[:$n]" "$want" "$(./md5 "$tmp")"
+	check "random_4kb.bin[:$n] (pipe)" "$want" "$(cat "$tmp" | ./md5)"
+done
+rm "$tmp"
 
 exit "$code"

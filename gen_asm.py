@@ -32,7 +32,8 @@ SAVED = ["%r8d", "%r9d", "%r14d", "%r15d"]
 T1, T2, M = "%r11d", "%r12d", "%r10d"
 
 BUFSZ = 256 * 1024
-SYS = {"read": 0, "write": 1, "open": 2, "fstat": 5, "mmap": 9, "exit": 60}
+SYS = {"read": 0, "write": 1, "open": 2, "fstat": 5, "lseek": 8, "mmap": 9,
+	"exit": 60}
 
 def g(i):
 	if i < 16: return i
@@ -149,8 +150,10 @@ def open_input():
 		".Lhave_fd:"]
 	return out
 
-# regular file with a size: mmap it and hash the whole thing. any
-# failure falls back to the read loop. st_mode at 24, st_size at 48
+# regular file with a size, at offset 0: mmap it and hash the whole
+# thing. a redirected stdin may already be partly consumed, the read
+# loop hashes from the current offset. any failure falls back to the
+# read loop. st_mode at 24, st_size at 48
 def mmap_path():
 	out = ["mov %r12, %rdi", "lea statbuf(%rip), %rsi"]
 	out += syscall("fstat")
@@ -158,6 +161,10 @@ def mmap_path():
 		"mov statbuf+24(%rip), %eax", "and $0170000, %eax",
 		"cmp $0100000, %eax", "jne .Lread_init",
 		"mov statbuf+48(%rip), %r14", "test %r14, %r14", "jz .Lread_init",
+		# lseek(fd, 0, SEEK_CUR)
+		"mov %r12, %rdi", "xor %esi, %esi", "mov $1, %edx"]
+	out += syscall("lseek")
+	out += ["test %rax, %rax", "jnz .Lread_init",
 		# mmap(0, size, PROT_READ, MAP_PRIVATE | MAP_POPULATE, fd, 0)
 		"xor %edi, %edi", "mov %r14, %rsi", "mov $1, %edx",
 		"mov $0x8002, %r10d", "mov %r12, %r8", "xor %r9d, %r9d"]
