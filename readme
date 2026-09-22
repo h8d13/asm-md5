@@ -9,7 +9,11 @@ first modified (C version) to match (within 2-5%) `md5sum` from `coreutils`
 
 then ASM optis (using unwind tables) based on gcc `-O3` analysis => asm translations.
 
-using `objdump` and `perf` mostly and stealing from `libcrypto`.
+using `objdump` and `perf` mostly and stealing from `libcrypto`:
+
+https://github.com/openssl/openssl/blob/master/crypto/md5/asm/md5-x86_64.pl
+
+plus a temporary `Makefile` to compile/bench/compare.
 
 finally, write a generator for testing changes in a simpler language.
 
