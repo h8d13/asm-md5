@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+head -c 1073741824 /dev/urandom > /tmp/md5bench.bin
+
+for i in 1 2 3; do
+      s=$(date +%s.%N)
+      ./md5 /tmp/md5bench.bin > /dev/null
+      e=$(date +%s.%N)
+      echo "$e - $s" | bc
+done
+
+# pin to p-cores
+taskset -c 2 perf stat -r 3 -e cpu_core/cycles/u ./md5 /tmp/md5bench.bin
+
+# divide cycles by 16777216 for cycles/block.
