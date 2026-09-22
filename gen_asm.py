@@ -92,14 +92,17 @@ def step(i):
 	# a + K + M first, off the chain. next M load reuses r10 right after
 	# round 4: a + ~x == a - 1 - x, the -1 folds into K
 	k = K[i] - 1 if r == 3 else K[i]
-	out = ["lea %d(%s,%s), %s" % (signed(k), r64(a), r64(M), a)]
-	load = ["mov %d(%%rsi), %s" % (4 * g(i + 1), M)] if i < 63 else []
+	# round 2 adds M from memory, freeing the lea for K + (c & ~d)
+	x = T1 if r == 1 else M
+	out = ["add %d(%%rsi), %s" % (4 * g(i), a)] if r == 1 else []
+	out += ["lea %d(%s,%s), %s" % (signed(k), r64(a), r64(x), a)]
+	load = ["mov %d(%%rsi), %s" % (4 * g(i + 1), M)] \
+		if i < 63 and (i + 1) // 16 != 1 else []
 	if r == 0:
 		out += ["and %s, %s" % (b, T1)] + load + ["xor %s, %s" % (d, T1),
 			"add %s, %s" % (T1, a)]
 	elif r == 1:
-		out += ["and %s, %s" % (b, T2)] + load + ["add %s, %s" % (T1, a),
-			"add %s, %s" % (T2, a)]
+		out += ["and %s, %s" % (b, T2)] + load + ["add %s, %s" % (T2, a)]
 	elif r == 2:
 		out += ["xor %s, %s" % (b, T1)] + load + ["add %s, %s" % (T1, a)]
 	else:
