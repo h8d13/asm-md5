@@ -17,15 +17,14 @@ plus a temporary `Makefile` to compile/bench/compare.
 
 finally, write a generator for testing changes in a simpler language.
 
-x86_64 only, raw linux syscalls, no libc
-
-
 currently needs:
 `grep -m1 '^flags' /proc/cpuinfo | grep "bmi1"`
 
 for extension instruction `andn`
 
 ===
+
+x86_64 only, raw linux syscalls, no libc
 
 #   $ ./gen_asm.py > md5.s
 #   $ as md5.s -o md5.o
