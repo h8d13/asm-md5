@@ -17,6 +17,8 @@ plus a temporary `Makefile` to compile/bench/compare.
 
 finally, write a generator for testing changes in a simpler language.
 
+x86_64 only, raw linux syscalls, no libc
+
 ===
 
 #   ./gen_asm.py > md5.s
