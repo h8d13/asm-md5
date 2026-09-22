@@ -19,4 +19,4 @@ finally, write a generator for testing changes in a simpler language.
 #   as md5.s -o md5.o && ld md5.o -o md5
 #   ./test-md5
 
-completes a 1GB file, single stream, in about 1 second.
+completes a 1GB file, single stream, in about 1 second (Intel i5-1345U @ 4.70).
