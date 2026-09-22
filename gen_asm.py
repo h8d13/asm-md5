@@ -81,15 +81,18 @@ def prep(i):
 		if i > 32:
 			return ["xor %s, %s" % (a, T1)]
 		return ["mov %s, %s" % (c, T1), "xor %s, %s" % (d, T1)]
-	# I = c ^ (b | ~d)
-	return ["mov $-1, %s" % T1, "xor %s, %s" % (d, T1)]
+	# I = c ^ (b | ~d) = ~(c ^ (~b & d)), every op needs b: nothing to
+	# prep. the ~ becomes a sub, see step()
+	return []
 
 def step(i):
 	a, b, c, d = regs(i)
 	r = i // 16
 	s = S[r][i % 4]
 	# a + K + M first, off the chain. next M load reuses r10 right after
-	out = ["lea %d(%s,%s), %s" % (signed(K[i]), r64(a), r64(M), a)]
+	# round 4: a + ~x == a - 1 - x, the -1 folds into K
+	k = K[i] - 1 if r == 3 else K[i]
+	out = ["lea %d(%s,%s), %s" % (signed(k), r64(a), r64(M), a)]
 	load = ["mov %d(%%rsi), %s" % (4 * g(i + 1), M)] if i < 63 else []
 	if r == 0:
 		out += ["and %s, %s" % (b, T1)] + load + ["xor %s, %s" % (d, T1),
@@ -100,8 +103,8 @@ def step(i):
 	elif r == 2:
 		out += ["xor %s, %s" % (b, T1)] + load + ["add %s, %s" % (T1, a)]
 	else:
-		out += ["or %s, %s" % (b, T1)] + load + ["xor %s, %s" % (c, T1),
-			"add %s, %s" % (T1, a)]
+		out += ["andn %s, %s, %s" % (d, b, T1)] + load + [
+			"xor %s, %s" % (c, T1), "sub %s, %s" % (T1, a)]
 	out.append("rol $%d, %s" % (s, a))
 	if i < 63:
 		out += prep(i + 1)
