@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # Emit a complete md5 program for Linux x86-64 as asm, no libc.
 #
-#   ./gen_asm.py > md5.s
-#   as md5.s -o md5.o && ld md5.o -o md5
-#   ./test-md5
-#
 # Regular files are mmap'd and hashed out of the page cache, anything
 # else goes through a read() loop with a 256 KiB buffer.
 
