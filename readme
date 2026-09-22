@@ -7,7 +7,7 @@ thought it would be fun to dive into the rabbit hole directly.
 
 first modified (C version) to match (within 2-5%) `md5sum` from `coreutils`
 
-then hand-rolled ASM optis (with unwind tables) based on gcc `-O3` analysis => asm translations.
+then ASM optis (using unwind tables) based on gcc `-O3` analysis => asm translations.
 
 using `objdump` and `perf` mostly and stealing from `libcrypto`.
 
