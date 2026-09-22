@@ -1,0 +1,7 @@
+this is a continuation of:
+
+https://github.com/bahamas10/c-md5
+
+first modified to match (within 2-5%) `md5sum` from `coreutils`
+
+then hand-rolled ASM optis based on gcc `-O3` analysis => asm translation
